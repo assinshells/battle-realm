@@ -36,5 +36,7 @@ router.post(
   AuthController.refresh,
 );
 router.post("/logout", authGuard, csrfProtection, AuthController.logout);
+// Профиль текущего пользователя (имя героя, e-mail) — для интерфейса.
+router.get("/me", authGuard, AuthController.me);
 
 export default router;

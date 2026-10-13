@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { AUTH_SCREENS, APP_NAME } from "@shared/constants/auth.constants.js";
-import { Storage } from "@shared/lib/storage.js";
 import { refreshAccessToken } from "@shared/api/axios.js";
 
 import { LoginPage } from "@pages/LoginPage.jsx";
@@ -8,11 +7,11 @@ import { RegisterPage } from "@pages/RegisterPage.jsx";
 import { ForgotPasswordPage } from "@pages/ForgotPasswordPage.jsx";
 import { VerifyOtpPage } from "@pages/VerifyOtpPage.jsx";
 import { ResetPasswordPage } from "@pages/ResetPasswordPage.jsx";
-import { HomePage } from "@pages/HomePage.jsx";
+import { AppLayout } from "@widgets/layouts";
+import { APP_PAGES } from "@app/appPages.js";
+import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 
 import "@app/styles/index.css";
-
-const USER_KEY = "userEmail";
 
 export default function App() {
   // accessToken живёt только в памяти (AuthSession) и не переживает
@@ -22,6 +21,7 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [screen, setScreen] = useState(AUTH_SCREENS.LOGIN);
   const [screenParams, setScreenParams] = useState({});
+  const [appPage, setAppPage] = useState(APP_PAGES[0].id);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,17 +47,15 @@ export default function App() {
     setScreenParams(params);
   };
 
-  const handleLoginSuccess = (email) => {
-    Storage.set(USER_KEY, email);
+  const handleLoginSuccess = () => {
     navigate(AUTH_SCREENS.APP);
   };
 
   const handleLogout = () => {
-    Storage.remove(USER_KEY);
+    useProfileStore.getState().clear();
+    setAppPage(APP_PAGES[0].id);
     navigate(AUTH_SCREENS.LOGIN);
   };
-
-  const currentEmail = Storage.get(USER_KEY) ?? "";
 
   if (booting) {
     return (
@@ -90,8 +88,21 @@ export default function App() {
         />
       );
 
-    case AUTH_SCREENS.APP:
-      return <HomePage email={currentEmail} onLogout={handleLogout} />;
+    case AUTH_SCREENS.APP: {
+      const current =
+        APP_PAGES.find((page) => page.id === appPage) ?? APP_PAGES[0];
+      const CurrentPage = current.Page;
+      return (
+        <AppLayout
+          items={APP_PAGES}
+          activeId={current.id}
+          onSelect={setAppPage}
+          onLogout={handleLogout}
+        >
+          <CurrentPage />
+        </AppLayout>
+      );
+    }
 
     default:
       return (

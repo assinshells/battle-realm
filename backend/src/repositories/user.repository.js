@@ -11,7 +11,13 @@ export const UserRepository = {
 
   async findById(id) {
     const { rows } = await pool.query(
-      "SELECT id, email, hero_name, password_hash FROM users WHERE id = $1",
+      `SELECT id, email, hero_name, password_hash,
+              level, hp, max_hp, xp, max_xp, silver, rubies,
+              strength, giftedness, constitution, luck, attack_skill, defense_skill,
+              damage_min, damage_max, armor, karma, hit_chance, block_chance,
+              order_name, order_rank, loot_gained, loot_lost,
+              tournaments_won, wins, draws, losses
+       FROM users WHERE id = $1`,
       [id],
     );
     return rows[0] ?? null;

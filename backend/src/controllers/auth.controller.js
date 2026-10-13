@@ -96,6 +96,16 @@ export const AuthController = {
     }
   },
 
+  me: async (req, res, next) => {
+    try {
+      // req.userId выставляет authGuard из access-токена.
+      const user = await AuthService.getProfile(req.userId);
+      res.status(HTTP_STATUS.OK).json({ success: true, user });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   logout: async (req, res, next) => {
     try {
       // Читаем напрямую из cookie (не через guard) — logout должен
