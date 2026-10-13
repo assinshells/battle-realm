@@ -1,11 +1,10 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    login VARCHAR(64) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE CHECK (email = lower(email)),
     password_hash TEXT NOT NULL,
-    email VARCHAR(255) UNIQUE,
-    gender VARCHAR(16) NOT NULL CHECK (gender IN ('male', 'female', 'unknown')),
+    hero_name VARCHAR(20) NOT NULL CHECK (char_length(hero_name) BETWEEN 3 AND 20),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_login ON users(login);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+-- Имя героя уникально без учёта регистра ("Arthur" = "arthur").
+CREATE UNIQUE INDEX IF NOT EXISTS users_hero_name_lower_idx ON users (lower(hero_name));

@@ -1,93 +1,107 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRegisterStore } from "@features/auth/register/model/useRegisterStore.js";
-import { GENDER_OPTIONS } from "@shared/constants/auth.constants.js";
+import {
+  HERO_NAME_MAX,
+  HERO_NAME_MIN,
+  PASSWORD_MIN_LENGTH,
+} from "@shared/constants/auth.constants.js";
 
 export function RegisterForm({ onSuccess, onBack }) {
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
+  const [heroName, setHeroName] = useState("");
   const [email, setEmail] = useState("");
-  const [gender, setGender] = useState("");
+  const [password, setPassword] = useState("");
   const { loading, error, register, clearError } = useRegisterStore();
+
+  // Состояние стора общее на всё приложение — сбрасываем ошибку прошлой
+  // попытки при открытии экрана.
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     clearError();
-    register({ login, password, email, gender }, onSuccess);
+    register(
+      { heroName: heroName.trim(), email: email.trim(), password },
+      onSuccess,
+    );
   };
 
   return (
     <>
-      {error && <p className="text-danger text-center mb-3">{error}</p>}
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
+          <label className="form-label" htmlFor="heroName">
+            Имя героя
+          </label>
           <input
-            id="loginInput"
+            id="heroName"
             type="text"
             className="form-control"
-            placeholder="Введіть нікнейм"
-            value={login}
-            onChange={(e) => setLogin(e.target.value)}
+            autoComplete="nickname"
+            minLength={HERO_NAME_MIN}
+            maxLength={HERO_NAME_MAX}
+            value={heroName}
+            onChange={(e) => setHeroName(e.target.value)}
+            required
+            autoFocus
+          />
+          <div className="form-text">
+            {HERO_NAME_MIN}–{HERO_NAME_MAX} символов: буквы, цифры, пробел, «_»
+            и «-».
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="email">
+            E-mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            className="form-control"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <div className="mb-3">
+
+        <div className="mb-4">
+          <label className="form-label" htmlFor="password">
+            Пароль
+          </label>
           <input
-            id="passwordInput"
+            id="password"
             type="password"
             className="form-control"
-            placeholder="Введіть пароль"
+            autoComplete="new-password"
+            minLength={PASSWORD_MIN_LENGTH}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div className="form-text">
+            Не короче {PASSWORD_MIN_LENGTH} символов.
+          </div>
         </div>
-        <div className="mb-3">
-          <input
-            id="emailInput"
-            type="email"
-            className="form-control"
-            placeholder="Введіть пошту (опціонально)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <label className="mb-2 text-muted small">Як ви себе ідентифікуєте?</label>
-        <div className="d-flex align-items-center mb-3 px-0">
-          {GENDER_OPTIONS.map((option) => (
-            <div className="form-check me-3" key={option.value}>
-              <input
-                className="form-check-input"
-                type="radio"
-                name="gender"
-                id={`gender-${option.value}`}
-                value={option.value}
-                checked={gender === option.value}
-                onChange={(e) => setGender(e.target.value)}
-                required
-              />
-              <label className="form-check-label" htmlFor={`gender-${option.value}`}>
-                {option.label}
-              </label>
-            </div>
-          ))}
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn btn-primary w-100 text-decoration-none rounded-4 fw-bold m-0"
-        >
-          {loading ? "Реєструємо..." : "Зареєструватися"}
+
+        <button type="submit" disabled={loading} className="btn btn-primary w-100">
+          {loading ? "Создаём…" : "Создать аккаунт"}
         </button>
       </form>
-      <p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="btn btn-outline-primary w-100 text-break rounded-4 fw-bold mt-4"
-        >
-          Увійти
+
+      <div className="d-flex flex-wrap justify-content-center gap-3 mt-3">
+        <button type="button" className="btn btn-link p-0" onClick={onBack}>
+          Уже есть аккаунт? Войти
         </button>
-      </p>
+      </div>
     </>
   );
 }

@@ -6,16 +6,15 @@
 
 /**
  * @typedef {Object} LoginRequestDto
- * @property {string} login
+ * @property {string} email
  * @property {string} password
  */
 
 /**
  * @typedef {Object} RegisterRequestDto
- * @property {string} login
+ * @property {string} email
  * @property {string} password
- * @property {string|undefined} email
- * @property {"male"|"female"|"unknown"} gender
+ * @property {string} heroName
  */
 
 /**
@@ -53,24 +52,28 @@
  * @property {{ code: string, message: string, details?: string[] }} error
  */
 
+// E-mail — единственный идентификатор пользователя. Приводим к нижнему
+// регистру и обрезаем пробелы здесь, чтобы "User@Mail.com" и "user@mail.com"
+// были одним и тем же аккаунтом (в БД стоит CHECK email = lower(email)).
+const normalizeEmail = (email) => String(email).trim().toLowerCase();
+
 export const toLoginRequestDto = (body) => ({
-  login: body.login,
+  email: normalizeEmail(body.email),
   password: body.password,
 });
 
 export const toRegisterRequestDto = (body) => ({
-  login: body.login,
+  email: normalizeEmail(body.email),
   password: body.password,
-  email: body.email || undefined,
-  gender: body.gender,
+  heroName: String(body.heroName).trim(),
 });
 
 export const toForgotPasswordDto = (body) => ({
-  email: body.email,
+  email: normalizeEmail(body.email),
 });
 
 export const toVerifyOtpDto = (body) => ({
-  email: body.email,
+  email: normalizeEmail(body.email),
   otpCode: body.otpCode,
 });
 

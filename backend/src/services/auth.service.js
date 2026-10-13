@@ -12,9 +12,12 @@ import {
 import { AUTH_ERRORS } from "../constants/auth.constants.js";
 
 export const AuthService = {
-  async login({ login, password }) {
-    const user = await UserRepository.findByLogin(login);
-    if (!user) throw new AuthenticationException();
+  async login({ email, password }) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) {
+      await PasswordProvider.burn(password);
+      throw new AuthenticationException();
+    }
 
     const valid = await PasswordProvider.verify(password, user.password_hash);
     if (!valid) throw new AuthenticationException();
@@ -22,31 +25,30 @@ export const AuthService = {
     return TokenService.issueTokenPair(user.id);
   },
 
-  async register({ login, password, email, gender }) {
-    const existingLogin = await UserRepository.findByLogin(login);
-    if (existingLogin) throw new ConflictException(AUTH_ERRORS.LOGIN_TAKEN);
-
-    if (email) {
-      const existingEmail = await UserRepository.findByEmail(email);
-      if (existingEmail) throw new ConflictException(AUTH_ERRORS.EMAIL_TAKEN);
-    }
-
+  async register({ email, password, heroName }) {
     const passwordHash = await PasswordProvider.hash(password);
     const created = await UserRepository.create({
-      login,
-      passwordHash,
       email,
-      gender,
+      passwordHash,
+      heroName,
     });
+    if (created) return { success: true };
 
-    if (!created) throw new ConflictException(AUTH_ERRORS.LOGIN_TAKEN);
-
-    return { success: true };
+    // create() вернул null — сработало одно из UNIQUE-ограничений.
+    // Выясняем какое, чтобы показать понятную ошибку.
+    const existing = await UserRepository.findByEmail(email);
+    if (existing) {
+      throw new ConflictException(AUTH_ERRORS.EMAIL_TAKEN, "EMAIL_TAKEN");
+    }
+    throw new ConflictException(
+      AUTH_ERRORS.HERO_NAME_TAKEN,
+      "HERO_NAME_TAKEN",
+    );
   },
 
   async forgotPassword({ email }) {
     const user = await UserRepository.findByEmail(email);
-    if (!user) return { success: true };
+    if (!user) throw new NotFoundException();
 
     const otp = await OtpService.generateOtp(user.id);
     await EmailAdapter.sendOtp(email, otp);

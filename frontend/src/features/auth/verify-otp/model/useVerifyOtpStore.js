@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { verifyOtpRequest } from "@features/auth/verify-otp/api/verifyOtp.api.js";
+import { toUserMessage } from "@shared/lib/authErrors.js";
 
 export const useVerifyOtpStore = create((set) => ({
   loading: false,
@@ -11,7 +12,7 @@ export const useVerifyOtpStore = create((set) => ({
       const data = await verifyOtpRequest({ email, otpCode });
       onSuccess(data.verifiedToken);
     } catch (err) {
-      set({ error: err.message });
+      set({ error: toUserMessage(err) });
     } finally {
       set({ loading: false });
     }

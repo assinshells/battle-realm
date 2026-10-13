@@ -12,7 +12,7 @@ import { HomePage } from "@pages/HomePage.jsx";
 
 import "@app/styles/index.css";
 
-const USER_KEY = "userLogin";
+const USER_KEY = "userEmail";
 
 export default function App() {
   // accessToken живёt только в памяти (AuthSession) и не переживает
@@ -47,8 +47,8 @@ export default function App() {
     setScreenParams(params);
   };
 
-  const handleLoginSuccess = (login) => {
-    Storage.set(USER_KEY, login);
+  const handleLoginSuccess = (email) => {
+    Storage.set(USER_KEY, email);
     navigate(AUTH_SCREENS.APP);
   };
 
@@ -57,7 +57,7 @@ export default function App() {
     navigate(AUTH_SCREENS.LOGIN);
   };
 
-  const currentLogin = Storage.get(USER_KEY) ?? "anonymous";
+  const currentEmail = Storage.get(USER_KEY) ?? "";
 
   if (booting) {
     return (
@@ -91,11 +91,15 @@ export default function App() {
       );
 
     case AUTH_SCREENS.APP:
-      return <HomePage login={currentLogin} onLogout={handleLogout} />;
+      return <HomePage email={currentEmail} onLogout={handleLogout} />;
 
     default:
       return (
-        <LoginPage onNavigate={navigate} onLoginSuccess={handleLoginSuccess} />
+        <LoginPage
+          onNavigate={navigate}
+          onLoginSuccess={handleLoginSuccess}
+          notice={screenParams.notice}
+        />
       );
   }
 }

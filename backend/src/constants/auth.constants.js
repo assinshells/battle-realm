@@ -1,7 +1,7 @@
 export const AUTH_ERRORS = Object.freeze({
-  INVALID_CREDENTIALS: "Invalid login or password",
-  LOGIN_TAKEN: "Login already taken",
+  INVALID_CREDENTIALS: "Invalid email or password",
   EMAIL_TAKEN: "Email already taken",
+  HERO_NAME_TAKEN: "Hero name already taken",
   USER_NOT_FOUND: "User not found",
   OTP_EXPIRED: "OTP expired or not found",
   OTP_INVALID: "Invalid OTP",
@@ -23,16 +23,6 @@ export const COOKIE_NAMES = Object.freeze({
   refreshToken: "refreshToken",
   csrfToken: "csrfToken",
 });
-
-// Gender is a required registration field with no default value —
-// the client must always send one of these explicit values.
-export const GENDER_VALUES = Object.freeze({
-  MALE: "male",
-  FEMALE: "female",
-  UNKNOWN: "unknown",
-});
-
-export const GENDER_OPTIONS = Object.freeze(Object.values(GENDER_VALUES));
 
 export const REDIS_KEYS = Object.freeze({
   refreshToken: (jti) => `refresh_token:${jti}`,

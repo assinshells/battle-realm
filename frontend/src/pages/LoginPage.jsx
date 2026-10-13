@@ -1,18 +1,15 @@
 import { AuthLayout } from "@widgets/layouts";
 import { LoginForm } from "@features/auth/login/ui/LoginForm.jsx";
 import { AUTH_SCREENS } from "@shared/constants/auth.constants.js";
-import { APP_NAME } from "@shared/constants/auth.constants.js";
 
-export function LoginPage({ onNavigate, onLoginSuccess }) {
+export function LoginPage({ onNavigate, onLoginSuccess, notice }) {
   return (
-    <AuthLayout
-      title={APP_NAME}
-      subtitle="Тут усе пристойно. Майже. Це ж чат — а чати завжди трохи брудні."
-    >
+    <AuthLayout title="Вход" subtitle="Врата королевства открыты для вас.">
       <LoginForm
-        onSuccess={(login) => {
+        notice={notice}
+        onSuccess={(email) => {
           if (onLoginSuccess) {
-            onLoginSuccess(login);
+            onLoginSuccess(email);
           } else {
             onNavigate(AUTH_SCREENS.APP);
           }

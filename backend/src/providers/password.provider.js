@@ -11,6 +11,9 @@ const hashRaw = (password, salt) =>
     });
   });
 
+// Фиксированная соль для "холостого" хеширования (см. burn()).
+const DUMMY_SALT = "0".repeat(SALT_LENGTH * 2);
+
 export const PasswordProvider = {
   async hash(password) {
     const salt = crypto.randomBytes(SALT_LENGTH).toString("hex");
@@ -30,5 +33,15 @@ export const PasswordProvider = {
       Buffer.from(candidate, "hex"),
       Buffer.from(hash, "hex"),
     );
+  },
+
+  /**
+   * Делает ту же дорогую работу, что и verify(), но результат не нужен.
+   * Вызывается, когда пользователя нет, — чтобы вход с несуществующим
+   * e-mail занимал столько же времени, сколько с неверным паролем,
+   * и по времени ответа нельзя было определить, есть ли аккаунт.
+   */
+  async burn(password) {
+    await hashRaw(password, DUMMY_SALT);
   },
 };

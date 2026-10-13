@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { forgotPasswordRequest } from "@features/auth/forgot-password/api/forgotPassword.api.js";
+import { toUserMessage } from "@shared/lib/authErrors.js";
 
 export const useForgotPasswordStore = create((set) => ({
   loading: false,
@@ -11,7 +12,7 @@ export const useForgotPasswordStore = create((set) => ({
       await forgotPasswordRequest({ email });
       onSuccess();
     } catch (err) {
-      set({ error: err.message });
+      set({ error: toUserMessage(err) });
     } finally {
       set({ loading: false });
     }

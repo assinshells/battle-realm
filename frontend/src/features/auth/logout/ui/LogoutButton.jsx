@@ -20,7 +20,7 @@ export function LogoutButton({ onLoggedOut, className = "btn btn-outline-danger"
       disabled={loading}
     >
       <LogOut size={18} strokeWidth={2} className="me-2" />
-      {loading ? "Виходимо..." : "Вийти"}
+      {loading ? "Выходим…" : "Выйти"}
     </button>
   );
 }

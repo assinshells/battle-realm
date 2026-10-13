@@ -27,8 +27,8 @@ export class NotFoundException extends BaseException {
 }
 
 export class ConflictException extends BaseException {
-  constructor(message) {
-    super(message, HTTP_STATUS.CONFLICT, "CONFLICT");
+  constructor(message, code = "CONFLICT") {
+    super(message, HTTP_STATUS.CONFLICT, code);
   }
 }
 

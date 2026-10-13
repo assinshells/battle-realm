@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useVerifyOtpStore } from "@features/auth/verify-otp/model/useVerifyOtpStore.js";
 
 export function OtpForm({ email, onSuccess, onBack }) {
@@ -6,6 +6,12 @@ export function OtpForm({ email, onSuccess, onBack }) {
   const inputRefs = useRef([]);
 
   const { loading, error, verify, clearError } = useVerifyOtpStore();
+
+  // Состояние стора общее на всё приложение — сбрасываем ошибку прошлой
+  // попытки при открытии экрана.
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleChange = (index, value) => {
     // Только цифры
@@ -91,7 +97,12 @@ export function OtpForm({ email, onSuccess, onBack }) {
 
   return (
     <>
-      {error && <p className="text-danger text-center mb-3">{error}</p>}
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div className="d-flex justify-content-between gap-2 mb-4">
           {otp.map((digit, index) => (
@@ -108,14 +119,9 @@ export function OtpForm({ email, onSuccess, onBack }) {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              className="form-control text-center fw-bold"
-              style={{
-                width: "3rem",
-                height: "3.5rem",
-                fontSize: "1.5rem",
-                padding: 0,
-              }}
-              aria-label={`OTP digit ${index + 1}`}
+              className="form-control form-control-lg text-center px-0"
+              aria-label={`Цифра кода ${index + 1} из 6`}
+              autoFocus={index === 0}
             />
           ))}
         </div>
@@ -123,21 +129,17 @@ export function OtpForm({ email, onSuccess, onBack }) {
         <button
           type="submit"
           disabled={loading || !isComplete}
-          className="btn btn-primary w-100 text-decoration-none rounded-4 fw-bold m-0"
+          className="btn btn-primary w-100"
         >
-          {loading ? "Верифікація..." : "Верифікувати"}
+          {loading ? "Проверяем…" : "Подтвердить"}
         </button>
       </form>
 
-      <p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="btn btn-outline-primary w-100 text-break rounded-4 fw-bold mt-4"
-        >
-          Увійти
+      <div className="d-flex flex-wrap justify-content-center gap-3 mt-3">
+        <button type="button" className="btn btn-link p-0" onClick={onBack}>
+          Вернуться ко входу
         </button>
-      </p>
+      </div>
     </>
   );
 }

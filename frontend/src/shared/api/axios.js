@@ -60,6 +60,7 @@ const normalizeError = (error) => {
   const normalized = new Error(message);
   normalized.code = code;
   normalized.status = status;
+  normalized.details = error.response?.data?.error?.details ?? [];
   return normalized;
 };
 
