@@ -1,4 +1,7 @@
 import { pool } from "../config/database.js";
+import { UPGRADABLE_ATTRIBUTES } from "../constants/game.constants.js";
+
+const UPGRADABLE_COLUMNS = new Set(Object.values(UPGRADABLE_ATTRIBUTES));
 
 export const UserRepository = {
   async findByEmail(email) {
@@ -46,6 +49,26 @@ export const UserRepository = {
       [email, passwordHash, heroName],
     );
     return rows[0] ?? null;
+  },
+
+  /**
+   * Атомарно повышает характеристику на +1 и списывает серебро.
+   * Выполняется только если значение характеристики всё ещё равно
+   * expectedValue и серебра хватает — иначе ничего не меняется и
+   * возвращается false (параллельный запрос успел раньше).
+   */
+  async upgradeAttribute({ userId, column, expectedValue, price }) {
+    if (!UPGRADABLE_COLUMNS.has(column)) {
+      throw new Error(`Column "${column}" is not upgradable`);
+    }
+    // column — только из белого списка выше, поэтому подстановка безопасна.
+    const { rowCount } = await pool.query(
+      `UPDATE users
+       SET ${column} = ${column} + 1, silver = silver - $2
+       WHERE id = $1 AND ${column} = $3 AND silver >= $2`,
+      [userId, price, expectedValue],
+    );
+    return rowCount === 1;
   },
 
   async updatePassword(id, passwordHash) {

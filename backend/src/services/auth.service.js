@@ -11,7 +11,7 @@ import {
   AuthorizationException,
 } from "../exceptions/auth.exceptions.js";
 import { AUTH_ERRORS } from "../constants/auth.constants.js";
-import { STAT_UPGRADE_PRICE } from "../constants/game.constants.js";
+import { toProfileDto } from "../dto/profile.dto.js";
 
 export const AuthService = {
   async login({ email, password }) {
@@ -53,52 +53,7 @@ export const AuthService = {
     // Пользователя удалили, а токен ещё жив — считаем токен недействительным.
     if (!user) throw new AccessTokenInvalidException();
 
-    return {
-      id: user.id,
-      email: user.email,
-      heroName: user.hero_name,
-      stats: {
-        level: user.level,
-        hp: user.hp,
-        maxHp: user.max_hp,
-        xp: user.xp,
-        maxXp: user.max_xp,
-        silver: user.silver,
-        rubies: user.rubies,
-      },
-      character: {
-        // Подробная информация. null в orderName/orderRank = "нет ордена".
-        details: {
-          orderName: user.order_name,
-          orderRank: user.order_rank,
-          lootGained: user.loot_gained,
-          lootLost: user.loot_lost,
-          tournamentsWon: user.tournaments_won,
-          wins: user.wins,
-          draws: user.draws,
-          losses: user.losses,
-        },
-        // Характеристики, которые игрок может повышать.
-        attributes: {
-          strength: user.strength,
-          giftedness: user.giftedness,
-          constitution: user.constitution,
-          luck: user.luck,
-          attackSkill: user.attack_skill,
-          defenseSkill: user.defense_skill,
-        },
-        // Боевые показатели.
-        combat: {
-          damageMin: user.damage_min,
-          damageMax: user.damage_max,
-          armor: user.armor,
-          karma: user.karma,
-          hitChance: user.hit_chance,
-          blockChance: user.block_chance,
-        },
-        upgradePrice: STAT_UPGRADE_PRICE,
-      },
-    };
+    return toProfileDto(user);
   },
 
   async forgotPassword({ email }) {

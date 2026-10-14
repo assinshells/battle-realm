@@ -19,5 +19,9 @@ export const useProfileStore = create((set) => ({
     }
   },
 
+  // Подставить свежий профиль, который вернул сервер (например, после
+  // повышения характеристики): все места, где он показан, обновятся сами.
+  setProfile: (profile) => set({ profile }),
+
   clear: () => set({ profile: null, failed: false }),
 }));
