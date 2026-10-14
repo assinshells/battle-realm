@@ -17,9 +17,10 @@ const COLLAPSED_KEY = "sidebarCollapsed";
  *  - мобильный (< md): сайдбар скрыт, верхняя панель с кнопкой «меню»
  *    открывает его как выезжающую панель (классы Bootstrap offcanvas).
  *
- * items    — [{ id, label, icon }] пункты меню,
- * activeId — id активного пункта,
- * onSelect — выбор пункта, onLogout — после выхода из аккаунта.
+ * items    — дерево меню: [{ id, label, icon }] — страницы и
+ *            [{ id, label, icon, children: [...] }] — раскрывающиеся группы,
+ * activeId — id активной страницы,
+ * onSelect — выбор страницы, onLogout — после выхода из аккаунта.
  */
 export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
   const [collapsed, setCollapsed] = useState(
@@ -59,7 +60,8 @@ export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
     setMobileOpen(false);
   };
 
-  const activeItem = items.find((item) => item.id === activeId);
+  const pages = items.flatMap((item) => item.children ?? [item]);
+  const activeItem = pages.find((page) => page.id === activeId);
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
   const toggleLabel = collapsed ? "Развернуть меню" : "Свернуть меню";
 

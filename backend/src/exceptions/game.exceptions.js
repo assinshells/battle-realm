@@ -7,3 +7,9 @@ export class InsufficientSilverException extends BaseException {
     super(message, HTTP_STATUS.CONFLICT, "INSUFFICIENT_SILVER");
   }
 }
+
+export class CityNotFoundException extends BaseException {
+  constructor(message = GAME_ERRORS.CITY_NOT_FOUND) {
+    super(message, HTTP_STATUS.NOT_FOUND, "CITY_NOT_FOUND");
+  }
+}

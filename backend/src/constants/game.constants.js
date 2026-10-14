@@ -20,4 +20,5 @@ export const attributeUpgradePrice = (value) => value * value;
 export const GAME_ERRORS = Object.freeze({
   NOT_ENOUGH_SILVER: "Not enough silver",
   UPGRADE_CONFLICT: "Attribute changed concurrently, try again",
+  CITY_NOT_FOUND: "City not found or not available yet",
 });

@@ -19,7 +19,7 @@ export const UserRepository = {
               strength, giftedness, constitution, luck, attack_skill, defense_skill,
               damage_min, damage_max, armor, karma, hit_chance, block_chance,
               order_name, order_rank, loot_gained, loot_lost,
-              tournaments_won, wins, draws, losses
+              tournaments_won, wins, draws, losses, city_id
        FROM users WHERE id = $1`,
       [id],
     );

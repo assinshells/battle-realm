@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import logger from "./config/logger.js";
 import authRoutes from "./routes/auth.routes.js";
 import characterRoutes from "./routes/character.routes.js";
+import worldRoutes from "./routes/world.routes.js";
 import { notFoundHandler } from "./middlewares/notFound.middleware.js";
 import { globalExceptionHandler } from "./middlewares/globalException.middleware.js";
 
@@ -35,6 +36,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/character", characterRoutes);
+app.use("/api/world", worldRoutes);
 
 app.use(notFoundHandler);
 app.use(globalExceptionHandler);

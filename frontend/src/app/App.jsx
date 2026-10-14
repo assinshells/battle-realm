@@ -8,8 +8,9 @@ import { ForgotPasswordPage } from "@pages/ForgotPasswordPage.jsx";
 import { VerifyOtpPage } from "@pages/VerifyOtpPage.jsx";
 import { ResetPasswordPage } from "@pages/ResetPasswordPage.jsx";
 import { AppLayout } from "@widgets/layouts";
-import { APP_PAGES } from "@app/appPages.js";
+import { APP_MENU, APP_PAGES, DEFAULT_PAGE_ID } from "@app/appPages.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
+import { useWorldStore } from "@features/world/model/useWorldStore.js";
 
 import "@app/styles/index.css";
 
@@ -21,7 +22,8 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [screen, setScreen] = useState(AUTH_SCREENS.LOGIN);
   const [screenParams, setScreenParams] = useState({});
-  const [appPage, setAppPage] = useState(APP_PAGES[0].id);
+  const [appPage, setAppPage] = useState(DEFAULT_PAGE_ID);
+  const [pageParams, setPageParams] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -51,9 +53,17 @@ export default function App() {
     navigate(AUTH_SCREENS.APP);
   };
 
+  // Переход между страницами приложения; params — данные для страницы
+  // (например, { cityId } для «Миссий»).
+  const navigateApp = (pageId, params = {}) => {
+    setAppPage(pageId);
+    setPageParams(params);
+  };
+
   const handleLogout = () => {
     useProfileStore.getState().clear();
-    setAppPage(APP_PAGES[0].id);
+    useWorldStore.getState().clear();
+    navigateApp(DEFAULT_PAGE_ID);
     navigate(AUTH_SCREENS.LOGIN);
   };
 
@@ -94,12 +104,12 @@ export default function App() {
       const CurrentPage = current.Page;
       return (
         <AppLayout
-          items={APP_PAGES}
+          items={APP_MENU}
           activeId={current.id}
-          onSelect={setAppPage}
+          onSelect={navigateApp}
           onLogout={handleLogout}
         >
-          <CurrentPage />
+          <CurrentPage navigate={navigateApp} params={pageParams} />
         </AppLayout>
       );
     }
