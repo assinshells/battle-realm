@@ -2,6 +2,7 @@ import {
   User,
   Shield,
   SlidersHorizontal,
+  Scale,
   Globe,
   Map as MapIcon,
   ScrollText,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { HeroPage } from "@pages/HeroPage.jsx";
 import { AttributesPage } from "@pages/AttributesPage.jsx";
+import { KarmaPage } from "@pages/KarmaPage.jsx";
 import { WorldMapPage } from "@pages/WorldMapPage.jsx";
 import { MissionsPage } from "@pages/MissionsPage.jsx";
 import { BattlesPage } from "@pages/BattlesPage.jsx";
@@ -33,6 +35,7 @@ export const APP_MENU = [
         icon: SlidersHorizontal,
         Page: AttributesPage,
       },
+      { id: "karma", label: "Карма", icon: Scale, Page: KarmaPage },
     ],
   },
   {

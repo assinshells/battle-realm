@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronsUpDown,
-  CircleUserRound,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronsUpDown } from "lucide-react";
+import { Avatar } from "@shared/ui/Avatar.jsx";
 import { LogoutButton } from "@features/auth/logout/ui/LogoutButton.jsx";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 
@@ -182,7 +178,7 @@ export function SidebarContent({
           aria-label={`Меню пользователя ${heroName}`}
           title={collapsed ? (level ? `${heroName} · Уровень ${level}` : heroName) : undefined}
         >
-          <CircleUserRound size={28} className="flex-shrink-0" />
+          <Avatar size={28} className="flex-shrink-0" />
           {!collapsed && (
             <>
               <span className="flex-grow-1 text-truncate lh-sm">

@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS users (
     karma        INTEGER NOT NULL DEFAULT 0,
     hit_chance   INTEGER NOT NULL DEFAULT 3 CHECK (hit_chance >= 0),     -- Шанс на удар
     block_chance INTEGER NOT NULL DEFAULT 3 CHECK (block_chance >= 0),   -- Шанс на защиту
+
+    -- Счётчики кармы (страница «Карма»).
+    light_karma INTEGER NOT NULL DEFAULT 0 CHECK (light_karma >= 0),
+    dark_karma  INTEGER NOT NULL DEFAULT 0 CHECK (dark_karma >= 0),
     CONSTRAINT users_damage_range CHECK (damage_min <= damage_max),
 
     -- Подробная информация (NULL = "---").

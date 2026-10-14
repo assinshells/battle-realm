@@ -48,6 +48,11 @@ export const toProfileDto = (user) => ({
         attributeUpgradePrice(user[column]),
       ]),
     ),
+    // Счётчики кармы.
+    karmaPoints: {
+      light: user.light_karma,
+      dark: user.dark_karma,
+    },
     // Боевые показатели.
     combat: {
       damageMin: user.damage_min,
