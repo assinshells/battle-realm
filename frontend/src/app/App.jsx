@@ -8,9 +8,10 @@ import { ForgotPasswordPage } from "@pages/ForgotPasswordPage.jsx";
 import { VerifyOtpPage } from "@pages/VerifyOtpPage.jsx";
 import { ResetPasswordPage } from "@pages/ResetPasswordPage.jsx";
 import { AppLayout } from "@widgets/layouts";
-import { APP_MENU, APP_PAGES, DEFAULT_PAGE_ID } from "@app/appPages.js";
+import { APP_MENU, ALL_PAGES, DEFAULT_PAGE_ID } from "@app/appPages.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 import { useWorldStore } from "@features/world/model/useWorldStore.js";
+import { useWorkStore } from "@features/work/model/useWorkStore.js";
 
 import "@app/styles/index.css";
 
@@ -63,6 +64,7 @@ export default function App() {
   const handleLogout = () => {
     useProfileStore.getState().clear();
     useWorldStore.getState().clear();
+    useWorkStore.getState().clear();
     navigateApp(DEFAULT_PAGE_ID);
     navigate(AUTH_SCREENS.LOGIN);
   };
@@ -100,12 +102,12 @@ export default function App() {
 
     case AUTH_SCREENS.APP: {
       const current =
-        APP_PAGES.find((page) => page.id === appPage) ?? APP_PAGES[0];
+        ALL_PAGES.find((page) => page.id === appPage) ?? ALL_PAGES[0];
       const CurrentPage = current.Page;
       return (
         <AppLayout
           items={APP_MENU}
-          activeId={current.id}
+          activeId={current.menuId ?? current.id}
           onSelect={navigateApp}
           onLogout={handleLogout}
         >

@@ -9,12 +9,17 @@ const TABS = [
 
 /**
  * KarmaPanel — аватар и имя героя, переключатель «Светлая карма» /
- * «Тёмная карма» и счётчик выбранной кармы. По умолчанию выбрана светлая.
+ * «Тёмная карма» и счётчик выбранной кармы. По умолчанию выбрана вкладка,
+ * где кармы больше (при равенстве — светлая).
  *
  * profile — ответ GET /api/auth/me.
  */
 export function KarmaPanel({ profile }) {
-  const [activeId, setActiveId] = useState("light");
+  const { light, dark } = profile.character.karmaPoints;
+  // Пока игрок сам не выбрал вкладку, активна та, где кармы больше
+  // (при равенстве, в том числе 0 и 0, — светлая).
+  const [chosenId, setChosenId] = useState(null);
+  const activeId = chosenId ?? (dark > light ? "dark" : "light");
   const active = TABS.find((tab) => tab.id === activeId);
   const value = profile.character.karmaPoints[active.valueKey];
 
@@ -40,7 +45,7 @@ export function KarmaPanel({ profile }) {
               className={`nav-link d-flex align-items-center gap-2 ${
                 id === activeId ? "active" : ""
               }`}
-              onClick={() => setActiveId(id)}
+              onClick={() => setChosenId(id)}
             >
               <Icon size={18} />
               {label}
