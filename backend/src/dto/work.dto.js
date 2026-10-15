@@ -35,7 +35,10 @@ const toRewardDto = (session) => ({
   karmaKind: session.karma_kind,
 });
 
-/** Активная работа (или null). */
+/**
+ * Текущая работа (или null). finished = время вышло, оплату можно принять.
+ * Пока работа не закончена, награда зачислена не будет.
+ */
 export const toActiveWorkDto = (session) =>
   session && {
     type: session.work_type,
@@ -43,11 +46,12 @@ export const toActiveWorkDto = (session) =>
     hours: session.hours,
     startedAt: session.started_at,
     endsAt: session.ends_at,
+    finished: session.finished,
     reward: toRewardDto(session),
   };
 
-/** Только что зачисленная работа (или null). */
-export const toSettledWorkDto = (session) =>
+/** Принятая и зачисленная работа. */
+export const toClaimedWorkDto = (session) =>
   session && {
     type: session.work_type,
     typeName: WORK_TYPES[session.work_type]?.name ?? session.work_type,

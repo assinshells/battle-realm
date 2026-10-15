@@ -77,7 +77,6 @@ export function WorkPage({ navigate }) {
                   <WorkCard
                     type={type}
                     hours={hours}
-                    silverPerHour={catalog.silverPerHour}
                     disabled={busy}
                     onTake={() => handleTake(type.id)}
                   />

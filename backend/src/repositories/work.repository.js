@@ -10,10 +10,16 @@ export const WorkRepository = {
     return rows[0].now;
   },
 
-  /** Активная (ещё не зачисленная) работа игрока или null. */
+  /**
+   * Работа игрока, оплата за которую ещё не получена, или null.
+   * finished — время вышло (считает БД), serverNow — время БД в этот момент.
+   */
   async findActive(userId) {
     const { rows } = await pool.query(
-      `SELECT ${SESSION_COLUMNS} FROM work_sessions WHERE user_id = $1`,
+      `SELECT ${SESSION_COLUMNS},
+              ends_at <= NOW() AS finished,
+              NOW() AS server_now
+       FROM work_sessions WHERE user_id = $1`,
       [userId],
     );
     return rows[0] ?? null;
@@ -34,7 +40,7 @@ export const WorkRepository = {
     return rowCount === 1;
   },
 
-  /** Отменяет ещё не законченную работу (ничего не зачисляется). */
+  /** Отменяет ещё не законченную работу (ничего не зачисляется). Законченную отменить нельзя — её нужно принять. */
   async cancelUnfinished(userId) {
     const { rowCount } = await pool.query(
       "DELETE FROM work_sessions WHERE user_id = $1 AND ends_at > NOW()",
@@ -44,14 +50,15 @@ export const WorkRepository = {
   },
 
   /**
-   * Зачисляет награду за законченную работу и удаляет её — одной транзакцией.
+   * «Принять оплату»: зачисляет награду за законченную работу и удаляет её —
+   * одной транзакцией.
    * Серебро добавляется к основному счёту. Карма зачитывается против
    * противоположной: сначала гасит её, остаток идёт в свою сторону
    * (тёмная 10 + светлая 11 → светлая 1, тёмная 0); в минус не уходит.
-   * Возвращает зачисленную работу или null, если закончившейся нет.
+   * Возвращает принятую работу или null, если законченной нет.
    * Параллельные вызовы безопасны: зачислит только тот, кто удалил строку.
    */
-  async settleFinished(userId) {
+  async claimFinished(userId) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");

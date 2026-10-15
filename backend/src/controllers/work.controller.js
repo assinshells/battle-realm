@@ -23,4 +23,6 @@ export const WorkController = {
   }),
 
   cancel: handler((req) => WorkService.cancel(req.userId)),
+
+  claim: handler((req) => WorkService.claim(req.userId)),
 };

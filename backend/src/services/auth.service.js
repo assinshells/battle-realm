@@ -12,7 +12,6 @@ import {
 } from "../exceptions/auth.exceptions.js";
 import { AUTH_ERRORS } from "../constants/auth.constants.js";
 import { toProfileDto } from "../dto/profile.dto.js";
-import { WorkService } from "./work.service.js";
 
 export const AuthService = {
   async login({ email, password }) {
@@ -50,10 +49,6 @@ export const AuthService = {
   },
 
   async getProfile(userId) {
-    // Закончившаяся работа зачисляется до чтения профиля, чтобы серебро
-    // и карма в нём были актуальными.
-    await WorkService.settleFinished(userId);
-
     const user = await UserRepository.findById(userId);
     // Пользователя удалили, а токен ещё жив — считаем токен недействительным.
     if (!user) throw new AccessTokenInvalidException();

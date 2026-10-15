@@ -20,3 +20,9 @@ export class WorkInProgressException extends BaseException {
     super(message, HTTP_STATUS.CONFLICT, "WORK_IN_PROGRESS");
   }
 }
+
+export class WorkNotFinishedException extends BaseException {
+  constructor(message = WORK_ERRORS.NOT_FINISHED) {
+    super(message, HTTP_STATUS.CONFLICT, "WORK_NOT_FINISHED");
+  }
+}

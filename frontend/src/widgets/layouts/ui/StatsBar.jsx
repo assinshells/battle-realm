@@ -4,7 +4,15 @@ const percent = (value, max) =>
   max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
 
 /** Блок с полоской прогресса (жизни, опыт). */
-function BarStat({ icon: Icon, iconClass, label, value, max, barClass }) {
+function BarStat({
+  icon: Icon,
+  iconClass,
+  label,
+  value,
+  max,
+  barClass,
+  hint,
+}) {
   return (
     <>
       <div className="d-flex justify-content-between align-items-center small mb-1">
@@ -29,6 +37,7 @@ function BarStat({ icon: Icon, iconClass, label, value, max, barClass }) {
           style={{ width: `${percent(value, max)}%` }}
         />
       </div>
+      {hint && <small className="d-block text-muted mt-1">{hint}</small>}
     </>
   );
 }
@@ -60,7 +69,7 @@ export function StatsBar({ stats }) {
       className="border-bottom bg-body-tertiary px-3 py-2"
       aria-label="Параметры героя"
     >
-      <div className="row g-3 align-items-end">
+      <div className="row g-3 align-items-start">
         <div className="col-6 col-md-4">
           <BarStat
             icon={Heart}
@@ -69,6 +78,7 @@ export function StatsBar({ stats }) {
             value={stats.hp}
             max={stats.maxHp}
             barClass="bg-danger"
+            hint={`Восстановление: ${stats.hpRegenPerHour} пунктов жизни в час`}
           />
         </div>
         <div className="col-6 col-md-4">
@@ -79,6 +89,7 @@ export function StatsBar({ stats }) {
             value={stats.xp}
             max={stats.maxXp}
             barClass="bg-warning"
+            hint={`До следующего уровня: ${Math.max(stats.maxXp - stats.xp, 0)} оч. опыта`}
           />
         </div>
         <div className="col-6 col-md-2">

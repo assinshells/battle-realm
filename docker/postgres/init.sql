@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
     silver INTEGER NOT NULL DEFAULT 200 CHECK (silver >= 0),
     rubies INTEGER NOT NULL DEFAULT 0   CHECK (rubies >= 0),
     CONSTRAINT users_hp_within_max CHECK (hp <= max_hp),
+    hp_regen_per_hour INTEGER NOT NULL DEFAULT 11 CHECK (hp_regen_per_hour >= 0), -- генерация жизней в час
 
     -- Характеристики (стартовые значения = DEFAULT).
     strength      INTEGER NOT NULL DEFAULT 3 CHECK (strength >= 1),      -- Сила
@@ -60,7 +61,6 @@ CREATE TABLE IF NOT EXISTS users (
     damage_min   INTEGER NOT NULL DEFAULT 1 CHECK (damage_min >= 0),
     damage_max   INTEGER NOT NULL DEFAULT 1 CHECK (damage_max >= 0),
     armor        INTEGER NOT NULL DEFAULT 1 CHECK (armor >= 0),
-    karma        INTEGER NOT NULL DEFAULT 0,
     hit_chance   INTEGER NOT NULL DEFAULT 3 CHECK (hit_chance >= 0),     -- Шанс на удар
     block_chance INTEGER NOT NULL DEFAULT 3 CHECK (block_chance >= 0),   -- Шанс на защиту
 

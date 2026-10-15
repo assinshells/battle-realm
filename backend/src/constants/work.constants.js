@@ -72,4 +72,5 @@ export const workReward = (typeId, hours, level) => {
 
 export const WORK_ERRORS = Object.freeze({
   ALREADY_WORKING: "You are already working",
+  NOT_FINISHED: "There is no finished work to collect payment for",
 });

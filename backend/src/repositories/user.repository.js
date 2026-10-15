@@ -15,9 +15,9 @@ export const UserRepository = {
   async findById(id) {
     const { rows } = await pool.query(
       `SELECT id, email, hero_name, password_hash,
-              level, hp, max_hp, xp, max_xp, silver, rubies,
+              level, hp, max_hp, hp_regen_per_hour, xp, max_xp, silver, rubies,
               strength, giftedness, constitution, luck, attack_skill, defense_skill,
-              damage_min, damage_max, armor, karma, hit_chance, block_chance,
+              damage_min, damage_max, armor, hit_chance, block_chance,
               order_name, order_rank, loot_gained, loot_lost,
               tournaments_won, wins, draws, losses, city_id,
               light_karma, dark_karma
