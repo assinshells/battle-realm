@@ -1,7 +1,11 @@
 import { UserRepository } from "../repositories/user.repository.js";
 import { WorldRepository } from "../repositories/world.repository.js";
 import { AccessTokenInvalidException } from "../exceptions/auth.exceptions.js";
-import { CityNotFoundException } from "../exceptions/game.exceptions.js";
+import {
+  CityNotFoundException,
+  LocationNotFoundException,
+} from "../exceptions/game.exceptions.js";
+import { MISSION_LENGTHS } from "../constants/game.constants.js";
 
 const getUser = async (userId) => {
   const user = await UserRepository.findById(userId);
@@ -45,6 +49,31 @@ export const WorldService = {
       name: city.name,
       isCurrent: city.id === user.city_id,
       locations: locations.map(({ id, name }) => ({ id, name })),
+    };
+  },
+
+  /**
+   * Локация и данные для её страницы: очки миссий игрока и длины миссий.
+   * Локация, город которой ещё не открыт игроку по уровню, для него «не существует».
+   */
+  async getLocation(userId, locationId) {
+    const user = await getUser(userId);
+
+    const location = await WorldRepository.findLocation(locationId);
+    if (!location || location.min_level > user.level) {
+      throw new LocationNotFoundException();
+    }
+
+    return {
+      id: location.id,
+      name: location.name,
+      cityId: location.city_id,
+      cityName: location.city_name,
+      missions: {
+        points: user.mission_points,
+        regenPerHour: user.mission_points_regen_per_hour,
+        lengths: MISSION_LENGTHS,
+      },
     };
   },
 };

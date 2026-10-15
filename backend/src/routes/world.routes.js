@@ -6,5 +6,6 @@ const router = Router();
 
 router.get("/map", authGuard, WorldController.map);
 router.get("/cities/:cityId", authGuard, WorldController.city);
+router.get("/locations/:locationId", authGuard, WorldController.location);
 
 export default router;

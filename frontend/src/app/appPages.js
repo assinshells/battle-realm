@@ -15,6 +15,7 @@ import { AttributesPage } from "@pages/AttributesPage.jsx";
 import { KarmaPage } from "@pages/KarmaPage.jsx";
 import { WorldMapPage } from "@pages/WorldMapPage.jsx";
 import { MissionsPage } from "@pages/MissionsPage.jsx";
+import { LocationPage } from "@pages/LocationPage.jsx";
 import { WorkPage } from "@pages/WorkPage.jsx";
 import { WorkProgressPage } from "@pages/WorkProgressPage.jsx";
 import { BattlesPage } from "@pages/BattlesPage.jsx";
@@ -63,6 +64,12 @@ export const APP_PAGES = APP_MENU.flatMap((item) => item.children ?? [item]);
  * menuId — какой пункт меню подсвечивать, пока страница открыта.
  */
 const HIDDEN_PAGES = [
+  {
+    id: "location",
+    label: "Миссии",
+    menuId: "missions",
+    Page: LocationPage,
+  },
   {
     id: "work-progress",
     label: "Работа",

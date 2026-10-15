@@ -16,6 +16,7 @@ export const UserRepository = {
     const { rows } = await pool.query(
       `SELECT id, email, hero_name, password_hash,
               level, hp, max_hp, hp_regen_per_hour, xp, max_xp, silver, rubies,
+              mission_points, mission_points_regen_per_hour,
               strength, giftedness, constitution, luck, attack_skill, defense_skill,
               damage_min, damage_max, armor, hit_chance, block_chance,
               order_name, order_rank, loot_gained, loot_lost,

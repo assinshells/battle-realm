@@ -20,7 +20,7 @@ INSERT INTO cities (id, name, min_level) VALUES (1, 'Ривенхолд', 1)
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO locations (city_id, name, sort_order) VALUES
-    (1, 'Рыночная площадь', 1),
+    (1, 'Пещера', 1),
     (1, 'Кузница', 2),
     (1, 'Таверна', 3),
     (1, 'Городские ворота', 4)
@@ -48,6 +48,10 @@ CREATE TABLE IF NOT EXISTS users (
     rubies INTEGER NOT NULL DEFAULT 0   CHECK (rubies >= 0),
     CONSTRAINT users_hp_within_max CHECK (hp <= max_hp),
     hp_regen_per_hour INTEGER NOT NULL DEFAULT 11 CHECK (hp_regen_per_hour >= 0), -- генерация жизней в час
+
+    -- Очки миссий: свободные и их восстановление в час.
+    mission_points                 INTEGER NOT NULL DEFAULT 120 CHECK (mission_points >= 0),
+    mission_points_regen_per_hour  INTEGER NOT NULL DEFAULT 5 CHECK (mission_points_regen_per_hour >= 0),
 
     -- Характеристики (стартовые значения = DEFAULT).
     strength      INTEGER NOT NULL DEFAULT 3 CHECK (strength >= 1),      -- Сила

@@ -26,3 +26,9 @@ export class WorkNotFinishedException extends BaseException {
     super(message, HTTP_STATUS.CONFLICT, "WORK_NOT_FINISHED");
   }
 }
+
+export class LocationNotFoundException extends BaseException {
+  constructor(message = GAME_ERRORS.LOCATION_NOT_FOUND) {
+    super(message, HTTP_STATUS.NOT_FOUND, "LOCATION_NOT_FOUND");
+  }
+}

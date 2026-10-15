@@ -21,4 +21,15 @@ export const GAME_ERRORS = Object.freeze({
   NOT_ENOUGH_SILVER: "Not enough silver",
   UPGRADE_CONFLICT: "Attribute changed concurrently, try again",
   CITY_NOT_FOUND: "City not found or not available yet",
+  LOCATION_NOT_FOUND: "Location not found or not available yet",
 });
+
+/**
+ * Длины миссий и их стоимость в очках миссий. Для каждой локации доступны
+ * миссии двух видов — светлая и тёмная — с одинаковыми длинами.
+ */
+export const MISSION_LENGTHS = Object.freeze([
+  { id: "short", name: "Короткая", cost: 20 },
+  { id: "medium", name: "Средняя", cost: 40 },
+  { id: "long", name: "Длинная", cost: 60 },
+]);

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { ChevronRight, MapPin } from "lucide-react";
 import { PageState } from "@shared/ui/PageState.jsx";
 import { useWorldStore } from "@features/world/model/useWorldStore.js";
 
@@ -7,8 +7,9 @@ import { useWorldStore } from "@features/world/model/useWorldStore.js";
  * MissionsPage — миссии: город и его локации.
  * По умолчанию показывает город, в котором игрок находится сейчас;
  * с карты мира открывается выбранный город (params.cityId).
+ * Клик по локации открывает её страницу.
  */
-export function MissionsPage({ params }) {
+export function MissionsPage({ params, navigate }) {
   const cityRef = params.cityId ?? "current";
 
   const cityData = useWorldStore((s) => s.city);
@@ -40,13 +41,19 @@ export function MissionsPage({ params }) {
             </h2>
 
             <h3 className="h6 text-muted mb-2">Локации</h3>
-            <div className="row row-cols-1 row-cols-sm-2 g-3">
+            <div className="list-group">
               {city.locations.map((location) => (
-                <div key={location.id} className="col">
-                  <div className="card h-100">
-                    <div className="card-body fw-semibold">{location.name}</div>
-                  </div>
-                </div>
+                <button
+                  key={location.id}
+                  type="button"
+                  className="list-group-item list-group-item-action d-flex align-items-center justify-content-between"
+                  onClick={() =>
+                    navigate("location", { locationId: location.id })
+                  }
+                >
+                  <span className="fw-semibold">{location.name}</span>
+                  <ChevronRight size={18} className="flex-shrink-0 text-muted" />
+                </button>
               ))}
             </div>
           </>

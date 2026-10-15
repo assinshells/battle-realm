@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   getWorldMapRequest,
   getCityRequest,
+  getLocationRequest,
 } from "@features/world/api/world.api.js";
 import { toUserMessage } from "@shared/lib/authErrors.js";
 
@@ -13,9 +14,14 @@ const initialState = {
   city: null,
   cityKey: null,
   cityError: null,
+  location: null,
+  locationKey: null,
+  locationError: null,
 };
 
-let cityRequestId = 0; // отбрасываем ответы устаревших запросов
+// Номера запросов: ответы устаревших запросов отбрасываем.
+let cityRequestId = 0;
+let locationRequestId = 0;
 
 export const useWorldStore = create((set) => ({
   ...initialState,
@@ -43,8 +49,24 @@ export const useWorldStore = create((set) => ({
     }
   },
 
+  loadLocation: async (locationId) => {
+    const requestId = ++locationRequestId;
+    set({ location: null, locationKey: null, locationError: null });
+    try {
+      const location = await getLocationRequest(locationId);
+      if (requestId === locationRequestId) {
+        set({ location, locationKey: String(locationId) });
+      }
+    } catch (err) {
+      if (requestId === locationRequestId) {
+        set({ locationError: toUserMessage(err) });
+      }
+    }
+  },
+
   clear: () => {
     cityRequestId++;
+    locationRequestId++;
     set(initialState);
   },
 }));

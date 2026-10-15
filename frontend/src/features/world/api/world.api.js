@@ -14,3 +14,16 @@ export const getWorldMapRequest = () =>
  */
 export const getCityRequest = (cityRef) =>
   apiClient.get(`/api/world/cities/${cityRef}`).then((r) => r.data.city);
+
+/**
+ * Локация и данные для её страницы.
+ * @returns {Promise<{
+ *   id: number, name: string, cityId: number, cityName: string,
+ *   missions: {
+ *     points: number, regenPerHour: number,
+ *     lengths: { id: string, name: string, cost: number }[]
+ *   }
+ * }>}
+ */
+export const getLocationRequest = (locationId) =>
+  apiClient.get(`/api/world/locations/${locationId}`).then((r) => r.data.location);
