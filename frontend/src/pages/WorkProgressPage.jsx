@@ -3,12 +3,10 @@ import { Coins } from "lucide-react";
 import { PageState } from "@shared/ui/PageState.jsx";
 import { KarmaAmount } from "@shared/ui/KarmaAmount.jsx";
 import { TimedProgress } from "@widgets/progress/ui/TimedProgress.jsx";
+import { AWAY_MESSAGE } from "@shared/constants/messages.js";
 import { useWorkStore } from "@features/work/model/useWorkStore.js";
 
 const POLL_SECONDS = 5;
-
-const AWAY_MESSAGE =
-  "Сейчас вы отсутствуете, так как зарабатываете себе на жизнь.";
 
 /**
  * WorkProgressPage — страница текущей работы по серверному времени:

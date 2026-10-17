@@ -58,6 +58,10 @@ export default function App() {
   // Переход между страницами приложения; params — данные для страницы
   // (например, { cityId } для «Миссий»).
   const navigateApp = (pageId, params = {}) => {
+    // Итог миссии показывается один раз: уходя со страницы итога, сбрасываем его.
+    if (appPage === "mission-result" && pageId !== "mission-result") {
+      useMissionStore.getState().clearResult();
+    }
     setAppPage(pageId);
     setPageParams(params);
   };

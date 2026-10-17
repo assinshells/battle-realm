@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
-import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Menu } from "lucide-react";
 import { APP_NAME } from "@shared/constants/auth.constants.js";
-import { Storage } from "@shared/lib/storage.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 import { SidebarContent } from "./SidebarContent.jsx";
 import { StatsBar } from "./StatsBar.jsx";
-
-const COLLAPSED_KEY = "sidebarCollapsed";
 
 /**
  * AppLayout — общий шаблон экранов для авторизованного пользователя:
  * сайдбар слева + область контента.
  *
- *  - десктоп (≥ md): сайдбар слева, кнопкой сворачивается до иконок
- *    (состояние запоминается в localStorage);
+ *  - десктоп (≥ md): сайдбар слева, всегда развёрнут;
  *  - мобильный (< md): сайдбар скрыт, верхняя панель с кнопкой «меню»
  *    открывает его как выезжающую панель (классы Bootstrap offcanvas).
  *
@@ -23,9 +19,6 @@ const COLLAPSED_KEY = "sidebarCollapsed";
  * onSelect — выбор страницы, onLogout — после выхода из аккаунта.
  */
 export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
-  const [collapsed, setCollapsed] = useState(
-    () => Storage.get(COLLAPSED_KEY) === "1",
-  );
   const [mobileOpen, setMobileOpen] = useState(false);
   const fetchProfile = useProfileStore((s) => s.fetchProfile);
   const stats = useProfileStore((s) => s.profile?.stats);
@@ -49,12 +42,6 @@ export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [mobileOpen]);
 
-  const toggleCollapsed = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    Storage.set(COLLAPSED_KEY, next ? "1" : "0");
-  };
-
   const handleMobileSelect = (id) => {
     onSelect(id);
     setMobileOpen(false);
@@ -62,36 +49,15 @@ export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
 
   const pages = items.flatMap((item) => item.children ?? [item]);
   const activeItem = pages.find((page) => page.id === activeId);
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
-  const toggleLabel = collapsed ? "Развернуть меню" : "Свернуть меню";
 
   return (
     <div className="d-flex vh-100">
       {/* Десктопный сайдбар */}
-      <aside
-        className={`d-none d-md-flex flex-column vh-100 border-end bg-body-tertiary ${
-          collapsed ? "col-md-auto" : "col-md-4 col-lg-3 col-xxl-2"
-        }`}
-      >
-        <div
-          className={`d-flex align-items-center gap-2 p-2 ${
-            collapsed ? "justify-content-center" : "justify-content-between"
-          }`}
-        >
-          {!collapsed && (
-            <span className="fw-semibold px-2 text-truncate">
-              {APP_NAME}
-            </span>
-          )}
-          <button
-            type="button"
-            className="btn btn-light"
-            onClick={toggleCollapsed}
-            aria-label={toggleLabel}
-            title={toggleLabel}
-          >
-            <ToggleIcon size={20} />
-          </button>
+      <aside className="d-none d-md-flex flex-column vh-100 border-end bg-body-tertiary col-md-4 col-lg-3 col-xxl-2">
+        <div className="p-2">
+          <span className="d-block fw-semibold px-2 py-2 text-truncate">
+            {APP_NAME}
+          </span>
         </div>
 
         <SidebarContent
@@ -99,7 +65,6 @@ export function AppLayout({ items, activeId, onSelect, onLogout, children }) {
           activeId={activeId}
           onSelect={onSelect}
           onLogout={onLogout}
-          collapsed={collapsed}
         />
       </aside>
 

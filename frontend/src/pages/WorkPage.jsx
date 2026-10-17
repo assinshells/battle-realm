@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { PageState } from "@shared/ui/PageState.jsx";
 import { useWorkStore } from "@features/work/model/useWorkStore.js";
+import { BusyStub } from "@widgets/progress/ui/BusyStub.jsx";
 import { WorkCard } from "@widgets/work/ui/WorkCard.jsx";
+import { useMissionStore } from "@features/missions/model/useMissionStore.js";
+import { useActivity } from "@features/missions/model/useActivity.js";
 
 /**
  * WorkPage — выбор работы: ползунок времени 1–8 часов и три карточки
  * (охрана ворот, работа в поле, грабёж). «Взять работу» открывает страницу
- * с прогрессом. Если работа уже идёт, сразу открывается она.
+ * с прогрессом. Если работа уже идёт, сразу открывается она. Если персонаж
+ * ждёт после миссии, вместо выбора показывается таймер.
  */
 export function WorkPage({ navigate }) {
   const catalog = useWorkStore((s) => s.catalog);
@@ -14,15 +18,18 @@ export function WorkPage({ navigate }) {
   const busy = useWorkStore((s) => s.busy);
   const loadWork = useWorkStore((s) => s.loadWork);
   const start = useWorkStore((s) => s.start);
+  const loadMissionState = useMissionStore((s) => s.loadState);
+  const { loaded: missionLoaded, activity, nowMs } = useActivity();
   const [hours, setHours] = useState(1);
 
   useEffect(() => {
     // Решение «работа уже идёт?» принимаем по свежему ответу сервера.
+    loadMissionState();
     loadWork().then(() => {
       if (useWorkStore.getState().active) navigate("work-progress");
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- только при открытии
-  }, [loadWork]);
+  }, [loadWork, loadMissionState]);
 
   const handleTake = async (typeId) => {
     if (await start(typeId, hours)) navigate("work-progress");
@@ -38,8 +45,14 @@ export function WorkPage({ navigate }) {
         </div>
       )}
 
-      <PageState loading={!catalog && !error} error={!catalog ? error : null}>
-        {catalog && (
+      <PageState
+        loading={(!catalog && !error) || !missionLoaded}
+        error={!catalog ? error : null}
+      >
+        {activity?.kind === "mission" ? (
+          <BusyStub activity={activity} nowMs={nowMs} navigate={navigate} />
+        ) : (
+          catalog && (
           <>
             <div className="card mb-4">
               <div className="card-body">
@@ -84,6 +97,7 @@ export function WorkPage({ navigate }) {
               ))}
             </div>
           </>
+          )
         )}
       </PageState>
     </div>

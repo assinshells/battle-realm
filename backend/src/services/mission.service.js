@@ -3,6 +3,7 @@ import { pool } from "../config/database.js";
 import { UserRepository } from "../repositories/user.repository.js";
 import { WorldRepository } from "../repositories/world.repository.js";
 import { MissionRepository } from "../repositories/mission.repository.js";
+import { WorkRepository } from "../repositories/work.repository.js";
 import { AccessTokenInvalidException } from "../exceptions/auth.exceptions.js";
 import {
   HpTooLowException,
@@ -18,7 +19,7 @@ import { regenerate } from "../game/regen.js";
 import { applyXp } from "../game/levels.js";
 import { runMission } from "../game/mission.js";
 import { toProfileDto } from "../dto/profile.dto.js";
-import { toMissionRunDto } from "../dto/mission.dto.js";
+import { toActivityDto } from "../dto/mission.dto.js";
 
 const regenPoints = (user) =>
   regenerate({
@@ -38,22 +39,19 @@ const regenHp = (user) =>
     now: user.db_now,
   });
 
-/** Состояние миссий игрока: очки, жизни, занятость и последняя миссия. */
+/** Состояние миссий игрока: очки, жизни и чем он сейчас занят. */
 const buildState = async (userId) => {
   const user = await UserRepository.findById(userId);
   if (!user) throw new AccessTokenInvalidException();
 
-  const [run, working] = await Promise.all([
+  const [run, work] = await Promise.all([
     MissionRepository.findRun(pool, userId),
-    MissionRepository.hasWork(pool, userId),
+    WorkRepository.findActive(userId),
   ]);
 
   const points = regenPoints(user);
   const hp = regenHp(user);
-
-  let busy = null;
-  if (run?.waiting) busy = "mission";
-  else if (working) busy = "work";
+  const activity = toActivityDto({ run, work });
 
   return {
     serverNow: user.db_now,
@@ -63,8 +61,8 @@ const buildState = async (userId) => {
       regenPerHour: user.mission_points_regen_per_hour,
     },
     hp: { current: hp.value, max: user.max_hp },
-    busy,
-    run: toMissionRunDto(run),
+    busy: activity?.kind ?? null,
+    activity,
   };
 };
 
@@ -82,7 +80,7 @@ export const MissionService = {
   async start(userId, { locationId, kind, length }) {
     const lengthDef = MISSION_LENGTHS.find((item) => item.id === length);
 
-    await MissionRepository.transaction(async (client) => {
+    const result = await MissionRepository.transaction(async (client) => {
       const user = await UserRepository.findByIdForUpdate(client, userId);
       if (!user) throw new AccessTokenInvalidException();
 
@@ -139,34 +137,39 @@ export const MissionService = {
         missionPointsUpdatedAt: points.updatedAt,
       });
 
+      const result = {
+        locationName: location.name,
+        cityName: location.city_name,
+        length,
+        minutes: lengthDef.minutes,
+        cost: lengthDef.cost,
+        ...mission,
+        totals: {
+          ...mission.totals,
+          levelsGained: leveled.levelsGained,
+          levelAfter: leveled.level,
+        },
+      };
+
+      // Итог сохраняется в БД (для будущей системы сообщений) ...
       await MissionRepository.saveRun(client, {
         userId,
         locationId: location.id,
         kind,
         length,
         minutes: lengthDef.minutes,
-        result: {
-          locationName: location.name,
-          cityName: location.city_name,
-          length,
-          minutes: lengthDef.minutes,
-          cost: lengthDef.cost,
-          ...mission,
-          totals: {
-            ...mission.totals,
-            levelsGained: leveled.levelsGained,
-            levelAfter: leveled.level,
-          },
-        },
+        result,
       });
+      return result;
     });
 
     // Свежие данные после зачисления: профиль (серебро, жизни, карма, уровень)
-    // и состояние миссий (таймер, итог боя).
+    // и состояние (таймер ожидания). ... а игроку итог отдаётся один раз,
+    // в ответе на старт; повторно по API он не выдаётся.
     const [state, freshUser] = await Promise.all([
       buildState(userId),
       UserRepository.findById(userId),
     ]);
-    return { ...state, user: toProfileDto(freshUser) };
+    return { ...state, user: toProfileDto(freshUser), result };
   },
 };

@@ -3,12 +3,15 @@ import { ArrowLeft } from "lucide-react";
 import { PageState } from "@shared/ui/PageState.jsx";
 import { useWorldStore } from "@features/world/model/useWorldStore.js";
 import { useMissionStore } from "@features/missions/model/useMissionStore.js";
+import { BusyStub } from "@widgets/progress/ui/BusyStub.jsx";
 import { LocationMissions } from "@widgets/world/ui/LocationMissions.jsx";
+import { useActivity } from "@features/missions/model/useActivity.js";
 
 /**
  * LocationPage — страница локации (открывается из «Миссий»): светлые и тёмные
  * миссии, свободные очки миссий. Кнопка миссии сразу проводит бой и открывает
- * итог. Пункт меню «Миссии» остаётся подсвеченным.
+ * итог. Если персонаж занят, вместо карточки показывается таймер. Пункт меню
+ * «Миссии» остаётся подсвеченным.
  */
 export function LocationPage({ navigate, params }) {
   const { locationId } = params;
@@ -19,6 +22,7 @@ export function LocationPage({ navigate, params }) {
   const loadLocation = useWorldStore((s) => s.loadLocation);
 
   const missionState = useMissionStore((s) => (s.loaded ? s : null));
+  const { activity, nowMs } = useActivity();
   const starting = useMissionStore((s) => s.starting);
   const missionError = useMissionStore((s) => s.error);
   const loadMissionState = useMissionStore((s) => s.loadState);
@@ -59,29 +63,22 @@ export function LocationPage({ navigate, params }) {
         </div>
       )}
 
-      {missionState?.busy === "mission" && (
-        <div className="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
-          <span>Вы отсутствуете после миссии. Дождитесь окончания ожидания.</span>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary"
-            onClick={() => navigate("mission-result")}
-          >
-            Показать итог боя
-          </button>
-        </div>
+      {!missionState ? (
+        <PageState loading={!missionError} />
+      ) : activity ? (
+        <BusyStub activity={activity} nowMs={nowMs} navigate={navigate} />
+      ) : (
+        <PageState loading={!location && !locationError} error={locationError}>
+          {location && (
+            <LocationMissions
+              location={location}
+              state={missionState}
+              starting={starting}
+              onStart={handleStart}
+            />
+          )}
+        </PageState>
       )}
-
-      <PageState loading={!location && !locationError} error={locationError}>
-        {location && (
-          <LocationMissions
-            location={location}
-            state={missionState}
-            starting={starting}
-            onStart={handleStart}
-          />
-        )}
-      </PageState>
     </div>
   );
 }

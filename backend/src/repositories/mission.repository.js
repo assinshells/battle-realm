@@ -29,7 +29,7 @@ export const MissionRepository = {
   },
 
   /**
-   * Последняя миссия игрока или null. waiting — время ожидания ещё не вышло
+   * Последняя миссия игрока (с сохранённым итогом) или null. waiting — время ожидания ещё не вышло
    * (считает БД), serverNow — время БД в этот момент.
    */
   async findRun(db, userId) {

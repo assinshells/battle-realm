@@ -10,7 +10,10 @@ const initialState = {
   points: null,
   hp: null,
   busy: null,
-  run: null,
+  activity: null,
+  // Итог последнего боя: показывается один раз сразу после боя и сбрасывается,
+  // когда игрок уходит со страницы итога (потом он будет в сообщениях).
+  result: null,
   // serverNow − время устройства на момент ответа (см. useWorkStore).
   offsetMs: 0,
   loaded: false,
@@ -27,7 +30,7 @@ export const useMissionStore = create((set, get) => ({
       points: data.points,
       hp: data.hp,
       busy: data.busy,
-      run: data.run,
+      activity: data.activity,
       offsetMs: Date.parse(data.serverNow) - Date.now(),
       loaded: true,
       error: null,
@@ -52,6 +55,7 @@ export const useMissionStore = create((set, get) => ({
     try {
       const data = await startMissionRequest(dto);
       get().applyState(data);
+      set({ result: data.result });
       // Серебро, опыт, уровень, жизни и карма уже изменились — обновляем профиль.
       useProfileStore.getState().setProfile(data.user);
       return true;
@@ -65,6 +69,7 @@ export const useMissionStore = create((set, get) => ({
     }
   },
 
+  clearResult: () => set({ result: null }),
   clearError: () => set({ error: null }),
   clear: () => set(initialState),
 }));

@@ -11,10 +11,8 @@ const MISSION_KINDS = [
  * Почему кнопка неактивна (или null, если можно идти). Показывается во
  * всплывающей подсказке.
  */
-const blockReason = ({ available, busy, points, hp, length, starting }) => {
+const blockReason = ({ available, points, hp, length, starting }) => {
   if (!available) return "В этой локации миссий пока нет";
-  if (busy === "mission") return "Вы ещё не вернулись с прошлой миссии";
-  if (busy === "work") return "Вы заняты работой";
   if (starting) return "Отправляемся…";
   if (points !== null && points < length.cost) return "Недостаточно очков миссий";
   const needHp = Math.ceil((hp.max * length.minHpPercent) / 100);
@@ -28,7 +26,7 @@ const blockReason = ({ available, busy, points, hp, length, starting }) => {
  * с ценой в очках миссий), в футере свободные очки миссий и подсказка.
  *
  * location — ответ GET /api/world/locations/:id,
- * state    — состояние миссий игрока (очки, жизни, занятость) или null,
+ * state    — состояние миссий игрока (очки, жизни) или null,
  * starting — миссия отправляется, onStart(kind, lengthId) — нажатие кнопки.
  */
 export function LocationMissions({ location, state, starting, onStart }) {
@@ -61,7 +59,6 @@ export function LocationMissions({ location, state, starting, onStart }) {
                 {missions.lengths.map((length) => {
                   const reason = blockReason({
                     available: missions.available,
-                    busy: state?.busy ?? null,
                     points: state ? points : null,
                     hp,
                     length,

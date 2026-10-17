@@ -1,12 +1,26 @@
-/** Последняя миссия: итог боя целиком и состояние ожидания. */
-export const toMissionRunDto = (run) =>
-  run && {
-    locationId: run.location_id,
-    kind: run.kind,
-    length: run.length,
-    startedAt: run.started_at,
-    endsAt: run.ends_at,
-    // Ожидание идёт — работу и новую миссию брать нельзя.
-    waiting: run.waiting,
-    result: run.result,
-  };
+/**
+ * Чем сейчас занят игрок (или null):
+ *  - { kind: "mission", ... } — ожидание после миссии (награда уже зачислена),
+ *  - { kind: "work", finished, ... } — работа (finished — оплату можно принять).
+ * Итог боя сюда НЕ входит: его игрок видит один раз сразу после боя, а
+ * сохранённый итог (mission_runs.result) пойдёт в будущую систему сообщений.
+ */
+export const toActivityDto = ({ run, work }) => {
+  if (run?.waiting) {
+    return {
+      kind: "mission",
+      startedAt: run.started_at,
+      endsAt: run.ends_at,
+      finished: false,
+    };
+  }
+  if (work) {
+    return {
+      kind: "work",
+      startedAt: work.started_at,
+      endsAt: work.ends_at,
+      finished: work.finished,
+    };
+  }
+  return null;
+};
