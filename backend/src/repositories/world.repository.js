@@ -21,7 +21,7 @@ export const WorldRepository = {
   /** Локация вместе с городом, которому она принадлежит. */
   async findLocation(id) {
     const { rows } = await pool.query(
-      `SELECT l.id, l.name, l.city_id, c.name AS city_name, c.min_level
+      `SELECT l.id, l.name, l.code, l.city_id, c.name AS city_name, c.min_level
        FROM locations l JOIN cities c ON c.id = l.city_id
        WHERE l.id = $1`,
       [id],

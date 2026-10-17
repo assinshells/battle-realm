@@ -8,14 +8,35 @@ const MISSION_KINDS = [
 ];
 
 /**
+ * Почему кнопка неактивна (или null, если можно идти). Показывается во
+ * всплывающей подсказке.
+ */
+const blockReason = ({ available, busy, points, hp, length, starting }) => {
+  if (!available) return "В этой локации миссий пока нет";
+  if (busy === "mission") return "Вы ещё не вернулись с прошлой миссии";
+  if (busy === "work") return "Вы заняты работой";
+  if (starting) return "Отправляемся…";
+  if (points !== null && points < length.cost) return "Недостаточно очков миссий";
+  const needHp = Math.ceil((hp.max * length.minHpPercent) / 100);
+  if (hp.current < needHp) return `Нужно не меньше ${needHp} жизней`;
+  return null;
+};
+
+/**
  * LocationMissions — карточка локации: в шапке название, тело пополам
  * (слева светлая миссия, справа тёмная; кнопки «Короткая / Средняя / Длинная»
  * с ценой в очках миссий), в футере свободные очки миссий и подсказка.
  *
- * location — ответ GET /api/world/locations/:id.
+ * location — ответ GET /api/world/locations/:id,
+ * state    — состояние миссий игрока (очки, жизни, занятость) или null,
+ * starting — миссия отправляется, onStart(kind, lengthId) — нажатие кнопки.
  */
-export function LocationMissions({ location }) {
+export function LocationMissions({ location, state, starting, onStart }) {
   const { missions } = location;
+  // Очки и жизни берём из свежего состояния миссий, пока оно не загружено —
+  // из данных локации.
+  const points = state?.points?.current ?? missions.points;
+  const hp = state?.hp ?? { current: Infinity, max: 1 };
 
   return (
     <div className="card">
@@ -37,20 +58,30 @@ export function LocationMissions({ location }) {
                 {title}
               </h2>
               <div className="d-grid gap-2">
-                {missions.lengths.map((length) => (
-                  <button
-                    key={length.id}
-                    type="button"
-                    className={`btn ${buttonClass} d-flex justify-content-between align-items-center`}
-                    // Запуск миссий пока не реализован: нужны их правила.
-                    disabled
-                    title="Запуск миссий скоро появится"
-                    aria-label={`${title}: ${length.name}, ${length.cost} очков миссий`}
-                  >
-                    <span>{length.name}</span>
-                    <span className="fw-semibold">{length.cost}</span>
-                  </button>
-                ))}
+                {missions.lengths.map((length) => {
+                  const reason = blockReason({
+                    available: missions.available,
+                    busy: state?.busy ?? null,
+                    points: state ? points : null,
+                    hp,
+                    length,
+                    starting,
+                  });
+                  return (
+                    <button
+                      key={length.id}
+                      type="button"
+                      className={`btn ${buttonClass} d-flex justify-content-between align-items-center`}
+                      disabled={reason !== null || !state}
+                      onClick={() => onStart(id, length.id)}
+                      title={reason ?? `${length.cost} очков миссий, ожидание ${length.minutes} мин.`}
+                      aria-label={`${title}: ${length.name}, ${length.cost} очков миссий`}
+                    >
+                      <span>{length.name}</span>
+                      <span className="fw-semibold">{length.cost}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </Fragment>
@@ -59,12 +90,13 @@ export function LocationMissions({ location }) {
 
       <div className="card-footer">
         <div>
-          Свободные очки миссий:{" "}
-          <span className="fw-semibold">{missions.points}</span>
+          Свободные очки миссий: <span className="fw-semibold">{points}</span>
         </div>
-        <small className="text-muted">
-          Подсказка: Очки миссий восстанавливаются на {missions.regenPerHour} в
-          час.
+        <small className="text-muted d-block">
+          Подсказка: Очки миссий восстанавливаются на {missions.regenPerHour} в час.
+        </small>
+        <small className="text-muted d-block">
+          После боя вы отсутствуете столько минут, сколько очков потрачено.
         </small>
       </div>
     </div>

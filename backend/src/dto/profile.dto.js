@@ -2,6 +2,20 @@ import {
   UPGRADABLE_ATTRIBUTES,
   attributeUpgradePrice,
 } from "../constants/game.constants.js";
+import { deriveCombat } from "../game/heroSheet.js";
+import { regenerate } from "../game/regen.js";
+
+/** Текущие жизни с учётом восстановления за прошедшее время. */
+const currentHp = (user) =>
+  user.db_now
+    ? regenerate({
+        value: user.hp,
+        max: user.max_hp,
+        perHour: user.hp_regen_per_hour,
+        updatedAt: user.hp_updated_at,
+        now: user.db_now,
+      }).value
+    : user.hp;
 
 /**
  * toProfileDto — профиль игрока для интерфейса (GET /api/auth/me и ответ
@@ -13,7 +27,7 @@ export const toProfileDto = (user) => ({
   heroName: user.hero_name,
   stats: {
     level: user.level,
-    hp: user.hp,
+    hp: currentHp(user),
     maxHp: user.max_hp,
     hpRegenPerHour: user.hp_regen_per_hour,
     xp: user.xp,
@@ -54,13 +68,8 @@ export const toProfileDto = (user) => ({
       light: user.light_karma,
       dark: user.dark_karma,
     },
-    // Боевые показатели.
-    combat: {
-      damageMin: user.damage_min,
-      damageMax: user.damage_max,
-      armor: user.armor,
-      hitChance: user.hit_chance,
-      blockChance: user.block_chance,
-    },
+    // Боевые показатели. Урон и шансы выводятся из характеристик, поэтому
+    // меняются вместе с ними.
+    combat: deriveCombat(user),
   },
 });

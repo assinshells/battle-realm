@@ -1,6 +1,6 @@
 import { BaseException } from "./base.exception.js";
 import { HTTP_STATUS } from "../constants/auth.constants.js";
-import { GAME_ERRORS } from "../constants/game.constants.js";
+import { GAME_ERRORS, MISSION_ERRORS } from "../constants/game.constants.js";
 import { WORK_ERRORS } from "../constants/work.constants.js";
 
 export class InsufficientSilverException extends BaseException {
@@ -30,5 +30,29 @@ export class WorkNotFinishedException extends BaseException {
 export class LocationNotFoundException extends BaseException {
   constructor(message = GAME_ERRORS.LOCATION_NOT_FOUND) {
     super(message, HTTP_STATUS.NOT_FOUND, "LOCATION_NOT_FOUND");
+  }
+}
+
+export class MissionInProgressException extends BaseException {
+  constructor(message = MISSION_ERRORS.IN_PROGRESS) {
+    super(message, HTTP_STATUS.CONFLICT, "MISSION_IN_PROGRESS");
+  }
+}
+
+export class NotEnoughMissionPointsException extends BaseException {
+  constructor(message = MISSION_ERRORS.NOT_ENOUGH_POINTS) {
+    super(message, HTTP_STATUS.CONFLICT, "NOT_ENOUGH_MISSION_POINTS");
+  }
+}
+
+export class HpTooLowException extends BaseException {
+  constructor(message = MISSION_ERRORS.HP_TOO_LOW) {
+    super(message, HTTP_STATUS.CONFLICT, "HP_TOO_LOW");
+  }
+}
+
+export class MissionsUnavailableException extends BaseException {
+  constructor(message = MISSION_ERRORS.UNAVAILABLE) {
+    super(message, HTTP_STATUS.CONFLICT, "MISSIONS_UNAVAILABLE");
   }
 }

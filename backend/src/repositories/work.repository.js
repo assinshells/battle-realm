@@ -26,18 +26,42 @@ export const WorkRepository = {
   },
 
   /**
-   * Берёт работу. Время окончания считает БД. Возвращает false, если у игрока
-   * уже есть работа (PRIMARY KEY user_id) — атомарно, без гонки.
+   * Берёт работу. Время окончания считает БД. Возвращает:
+   *  - "started"  — работа взята,
+   *  - "working"  — у игрока уже есть работа (PRIMARY KEY user_id),
+   *  - "mission"  — игрок ещё не вернулся с миссии (идёт ожидание).
+   * Строка игрока блокируется, поэтому работа и миссия не стартуют одновременно.
    */
   async start({ userId, workType, hours, rewardSilver, rewardKarma, karmaKind }) {
-    const { rowCount } = await pool.query(
-      `INSERT INTO work_sessions
-         (user_id, work_type, hours, ends_at, reward_silver, reward_karma, karma_kind)
-       VALUES ($1, $2, $3, NOW() + make_interval(hours => $3), $4, $5, $6)
-       ON CONFLICT (user_id) DO NOTHING`,
-      [userId, workType, hours, rewardSilver, rewardKarma, karmaKind],
-    );
-    return rowCount === 1;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("SELECT id FROM users WHERE id = $1 FOR UPDATE", [userId]);
+
+      const waiting = await client.query(
+        "SELECT 1 FROM mission_runs WHERE user_id = $1 AND ends_at > NOW()",
+        [userId],
+      );
+      if (waiting.rows.length) {
+        await client.query("ROLLBACK");
+        return "mission";
+      }
+
+      const { rowCount } = await client.query(
+        `INSERT INTO work_sessions
+           (user_id, work_type, hours, ends_at, reward_silver, reward_karma, karma_kind)
+         VALUES ($1, $2, $3, NOW() + make_interval(hours => $3), $4, $5, $6)
+         ON CONFLICT (user_id) DO NOTHING`,
+        [userId, workType, hours, rewardSilver, rewardKarma, karmaKind],
+      );
+      await client.query("COMMIT");
+      return rowCount === 1 ? "started" : "working";
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
   },
 
   /** Отменяет ещё не законченную работу (ничего не зачисляется). Законченную отменить нельзя — её нужно принять. */

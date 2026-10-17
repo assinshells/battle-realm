@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS locations (
     city_id    INTEGER NOT NULL REFERENCES cities(id) ON DELETE CASCADE,
     name       VARCHAR(64) NOT NULL,
     sort_order INTEGER NOT NULL DEFAULT 0,
+    -- Бестиарий миссий: код набора мобов (например 'cave'); его могут делить
+    -- несколько локаций. NULL — миссий в локации нет.
+    code       VARCHAR(32),
     UNIQUE (city_id, name)
 );
 
@@ -19,11 +22,11 @@ CREATE TABLE IF NOT EXISTS locations (
 INSERT INTO cities (id, name, min_level) VALUES (1, 'Ривенхолд', 1)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO locations (city_id, name, sort_order) VALUES
-    (1, 'Пещера', 1),
-    (1, 'Кузница', 2),
-    (1, 'Таверна', 3),
-    (1, 'Городские ворота', 4)
+INSERT INTO locations (city_id, name, sort_order, code) VALUES
+    (1, 'Пещера', 1, 'cave'),
+    (1, 'Кузница', 2, NULL),
+    (1, 'Таверна', 3, NULL),
+    (1, 'Городские ворота', 4, NULL)
 ON CONFLICT (city_id, name) DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('cities', 'id'), GREATEST((SELECT max(id) FROM cities), 1));
@@ -48,10 +51,14 @@ CREATE TABLE IF NOT EXISTS users (
     rubies INTEGER NOT NULL DEFAULT 0   CHECK (rubies >= 0),
     CONSTRAINT users_hp_within_max CHECK (hp <= max_hp),
     hp_regen_per_hour INTEGER NOT NULL DEFAULT 11 CHECK (hp_regen_per_hour >= 0), -- генерация жизней в час
+    hp_updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),  -- от этого момента идёт восстановление жизней
 
     -- Очки миссий: свободные и их восстановление в час.
     mission_points                 INTEGER NOT NULL DEFAULT 120 CHECK (mission_points >= 0),
     mission_points_regen_per_hour  INTEGER NOT NULL DEFAULT 5 CHECK (mission_points_regen_per_hour >= 0),
+    mission_points_max             INTEGER NOT NULL DEFAULT 120 CHECK (mission_points_max > 0),
+    mission_points_updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT users_mission_points_within_max CHECK (mission_points <= mission_points_max),
 
     -- Характеристики (стартовые значения = DEFAULT).
     strength      INTEGER NOT NULL DEFAULT 3 CHECK (strength >= 1),      -- Сила
@@ -61,17 +68,13 @@ CREATE TABLE IF NOT EXISTS users (
     attack_skill  INTEGER NOT NULL DEFAULT 3 CHECK (attack_skill >= 1),  -- Искусство атаки
     defense_skill INTEGER NOT NULL DEFAULT 3 CHECK (defense_skill >= 1), -- Искусство защиты
 
-    -- Боевые показатели.
-    damage_min   INTEGER NOT NULL DEFAULT 1 CHECK (damage_min >= 0),
-    damage_max   INTEGER NOT NULL DEFAULT 1 CHECK (damage_max >= 0),
+    -- Боевые показатели. Урон, шанс на удар и на защиту выводятся из
+    -- характеристик (Сила, Искусство атаки и защиты), в БД не хранятся.
     armor        INTEGER NOT NULL DEFAULT 1 CHECK (armor >= 0),
-    hit_chance   INTEGER NOT NULL DEFAULT 3 CHECK (hit_chance >= 0),     -- Шанс на удар
-    block_chance INTEGER NOT NULL DEFAULT 3 CHECK (block_chance >= 0),   -- Шанс на защиту
 
     -- Счётчики кармы (страница «Карма»).
     light_karma INTEGER NOT NULL DEFAULT 0 CHECK (light_karma >= 0),
     dark_karma  INTEGER NOT NULL DEFAULT 0 CHECK (dark_karma >= 0),
-    CONSTRAINT users_damage_range CHECK (damage_min <= damage_max),
 
     -- Подробная информация (NULL = "---").
     order_name      VARCHAR(64),
@@ -101,4 +104,18 @@ CREATE TABLE IF NOT EXISTS work_sessions (
     karma_kind    VARCHAR(5) CHECK (karma_kind IN ('light', 'dark')),
     CHECK (ends_at > started_at),
     CHECK ((karma_kind IS NULL) = (reward_karma = 0))
+);
+
+-- Последняя миссия игрока: итог боя (JSON с ходом боя и наградами) и время,
+-- до которого игрок «отсутствует». Награда уже зачислена в момент боя;
+-- пока ends_at не наступил, брать работу или новую миссию нельзя.
+CREATE TABLE IF NOT EXISTS mission_runs (
+    user_id     INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    location_id INTEGER REFERENCES locations(id) ON DELETE SET NULL,
+    kind        VARCHAR(5) NOT NULL CHECK (kind IN ('light', 'dark')),
+    length      VARCHAR(6) NOT NULL CHECK (length IN ('short', 'medium', 'long')),
+    started_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ends_at     TIMESTAMPTZ NOT NULL,
+    result      JSONB NOT NULL,
+    CHECK (ends_at > started_at)
 );

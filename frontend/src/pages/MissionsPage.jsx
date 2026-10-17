@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { ChevronRight, MapPin } from "lucide-react";
 import { PageState } from "@shared/ui/PageState.jsx";
 import { useWorldStore } from "@features/world/model/useWorldStore.js";
+import { useMissionStore } from "@features/missions/model/useMissionStore.js";
 
 /**
  * MissionsPage — миссии: город и его локации.
@@ -17,9 +18,14 @@ export function MissionsPage({ params, navigate }) {
   const cityError = useWorldStore((s) => s.cityError);
   const loadCity = useWorldStore((s) => s.loadCity);
 
+  const lastRun = useMissionStore((s) => s.run);
+  const waiting = useMissionStore((s) => s.run?.waiting ?? false);
+  const loadMissionState = useMissionStore((s) => s.loadState);
+
   useEffect(() => {
     loadCity(cityRef);
-  }, [loadCity, cityRef]);
+    loadMissionState();
+  }, [loadCity, loadMissionState, cityRef]);
 
   // Показываем только город, который запрошен сейчас (не прошлый).
   const city = cityKey === String(cityRef) ? cityData : null;
@@ -27,6 +33,24 @@ export function MissionsPage({ params, navigate }) {
   return (
     <div className="container-fluid p-4">
       <h1 className="h3 mb-3">Миссии</h1>
+
+      {lastRun?.result && (
+        <div className="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2" role="status">
+          <span>
+            {waiting
+              ? "Вы отсутствуете после миссии."
+              : "Последняя миссия завершена."}{" "}
+            Итог боя сохранён.
+          </span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => navigate("mission-result")}
+          >
+            Показать итог боя
+          </button>
+        </div>
+      )}
       <PageState loading={!city && !cityError} error={cityError}>
         {city && (
           <>

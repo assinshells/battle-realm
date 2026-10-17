@@ -6,6 +6,8 @@ import {
   LocationNotFoundException,
 } from "../exceptions/game.exceptions.js";
 import { MISSION_LENGTHS } from "../constants/game.constants.js";
+import { BESTIARY } from "../game/bestiary.js";
+import { regenerate } from "../game/regen.js";
 
 const getUser = async (userId) => {
   const user = await UserRepository.findById(userId);
@@ -70,7 +72,16 @@ export const WorldService = {
       cityId: location.city_id,
       cityName: location.city_name,
       missions: {
-        points: user.mission_points,
+        // Миссии есть только у локаций с бестиарием.
+        available: Boolean(location.code && BESTIARY[location.code]),
+        points: regenerate({
+          value: user.mission_points,
+          max: user.mission_points_max,
+          perHour: user.mission_points_regen_per_hour,
+          updatedAt: user.mission_points_updated_at,
+          now: user.db_now,
+        }).value,
+        maxPoints: user.mission_points_max,
         regenPerHour: user.mission_points_regen_per_hour,
         lengths: MISSION_LENGTHS,
       },

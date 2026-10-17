@@ -12,6 +12,7 @@ import { APP_MENU, ALL_PAGES, DEFAULT_PAGE_ID } from "@app/appPages.js";
 import { useProfileStore } from "@features/profile/model/useProfileStore.js";
 import { useWorldStore } from "@features/world/model/useWorldStore.js";
 import { useWorkStore } from "@features/work/model/useWorkStore.js";
+import { useMissionStore } from "@features/missions/model/useMissionStore.js";
 
 import "@app/styles/index.css";
 
@@ -65,6 +66,7 @@ export default function App() {
     useProfileStore.getState().clear();
     useWorldStore.getState().clear();
     useWorkStore.getState().clear();
+    useMissionStore.getState().clear();
     navigateApp(DEFAULT_PAGE_ID);
     navigate(AUTH_SCREENS.LOGIN);
   };

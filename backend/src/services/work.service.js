@@ -2,6 +2,7 @@ import { UserRepository } from "../repositories/user.repository.js";
 import { WorkRepository } from "../repositories/work.repository.js";
 import { AccessTokenInvalidException } from "../exceptions/auth.exceptions.js";
 import {
+  MissionInProgressException,
   WorkInProgressException,
   WorkNotFinishedException,
 } from "../exceptions/game.exceptions.js";
@@ -39,7 +40,7 @@ export const WorkService = {
 
     const reward = workReward(workType, hours, user.level);
     // Пока прошлая работа не принята (даже законченная), новую взять нельзя.
-    const started = await WorkRepository.start({
+    const status = await WorkRepository.start({
       userId,
       workType,
       hours,
@@ -47,7 +48,9 @@ export const WorkService = {
       rewardKarma: reward.karma,
       karmaKind: reward.karmaKind,
     });
-    if (!started) throw new WorkInProgressException();
+    // Нельзя брать работу, пока игрок «отсутствует» после миссии.
+    if (status === "mission") throw new MissionInProgressException();
+    if (status === "working") throw new WorkInProgressException();
 
     return buildState(userId);
   },
